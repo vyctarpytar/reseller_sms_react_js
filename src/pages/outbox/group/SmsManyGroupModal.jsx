@@ -58,7 +58,7 @@ const SmsManyGroupModal = ({
       [formName]: value,
     }));
   }
-
+ 
   const onFinish = async (data) => {
     if (!inputValue) {
       toast.error("Please add message");
@@ -95,8 +95,7 @@ const SmsManyGroupModal = ({
     fetchDistinctSenderNamesData();
   }, []);
 
-  console.log("rowIdTableGroup", rowIdTableGroup);
-
+ 
   return (
     <>
       <Modal
@@ -120,7 +119,7 @@ const SmsManyGroupModal = ({
         >
           {rowIdTableGroup && rowIdTableGroup?.length > 0 && (
             <div className="text-dmSans text-[16px] mb-10 flex flex-col">
-              Selected Groups :
+              Selected Groups:
               {rowIdTableGroup &&
                 rowIdTableGroup?.map((item) => (
                   <span className=" ">
@@ -234,6 +233,7 @@ const SmsManyGroupModal = ({
         setInputValue={setInputValue}
         setIsModalOpenPrev={setIsModalOpen}
         grpIds = {rowIdTableGroup?.map((item) => item?.groupId)?.join(",")}
+        senderId={formData?.senderId}
       />
     </>
   );

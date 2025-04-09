@@ -26,7 +26,8 @@ const ScheduleManyGroupsModal = ({
   title,
   inputValue,
   setIsModalOpenPrev,
-  grpIds
+  grpIds,
+  senderId
 }) => {
   const handleOk = () => {
     setIsModalOpen(false);
@@ -59,7 +60,7 @@ const ScheduleManyGroupsModal = ({
     await setShowDate(false);
     await setActiveSchedule(false)
   };
-
+ 
   const onFinish = async (data) => {
     if (!dateSchedule) {
       toast.error("Select date & time");
@@ -70,7 +71,8 @@ const ScheduleManyGroupsModal = ({
         url: `api/v2/sms/multi-group`,
         grpMessage: inputValue,
         grpSendAt: dateSchedule,
-        grpIds:grpIds
+        grpIds:grpIds,
+        senderId:senderId
       })
     );
     if (res?.payload?.success) {
@@ -114,7 +116,7 @@ const ScheduleManyGroupsModal = ({
               extra={"Choose date & time"}
               label={
                 <span>
-                  Pick date & Time <span className="text-[#FF0000]">*</span>
+                  Pick date & Time<span className="text-[#FF0000]">*</span>
                 </span>
               }
               name="invoMarkedPaidValueDate"
