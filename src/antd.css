@@ -380,4 +380,6 @@
 	scrollbar-width: thin;      /* Scrollbar width */
 	scrollbar-color: #a9a9a9 #f4f5f7;  /* Scrollbar color and track color */
   }
-  
+.ant-breadcrumb-separator {
+	display: flex;
+  }

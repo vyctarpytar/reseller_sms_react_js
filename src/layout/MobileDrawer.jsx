@@ -152,9 +152,9 @@ const MobileDrawer = ({ open, onClose }) => {
     },
   ];
 
-  useEffect(() => {
-    dispatch(fetchMenu());
-  }, []);
+  // useEffect(() => {
+  //   dispatch(fetchMenu());
+  // }, []);
 
   return (
     <>

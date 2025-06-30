@@ -24,7 +24,7 @@ export default function LoginModal({ open, handleCancel }) {
       axiosInstance.defaults.headers.common["Authorization"] =
         await `Bearer ${res?.payload?.access_token}`;
       toast.success("Successfully logged in");
-      await dispatch(fetchMenu());
+      // await dispatch(fetchMenu());
       await navigate("/dashboard");
     } else {
       toast.error("Error logging in, kindly try again");

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import { cleanAuthLoading, logout } from "./features/auth/authSlice";
-import { cleanBalanceHeader } from "./features/menu/menuSlice";
+import { cleanBalanceHeader, fetchMenu } from "./features/menu/menuSlice";
 
 export default function Root() {
   const { isLoggedIn, user, token } = useSelector((state) => state.auth);
@@ -13,7 +13,7 @@ export default function Root() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const loc = useLocation();
-  const isTokenExpired = (token) => { 
+  const isTokenExpired = (token) => {
     if (!token) return true;
 
     const decodedToken = token?.length && jwtDecode(token);
@@ -23,27 +23,34 @@ export default function Root() {
   };
 
   useEffect(() => {
-    if (!token) { 
+    if (!token) {
       setTokenExpired(true);
       dispatch(logout());
       dispatch(cleanBalanceHeader());
-      dispatch(cleanAuthLoading())
+      dispatch(cleanAuthLoading());
       navigate("/login");
       return;
     }
 
-    if (isTokenExpired(token)) { 
+    if (isTokenExpired(token)) {
       setTokenExpired(true);
       dispatch(logout());
       dispatch(cleanBalanceHeader());
-      dispatch(cleanAuthLoading())
+      dispatch(cleanAuthLoading());
       navigate("/login");
     } else {
       setTokenExpired(false);
     }
   }, [token, dispatch, navigate]);
+  const orgId = localStorage.getItem("selectedOrg");
+  const accId = localStorage.getItem("selectedAccount");
 
- 
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchMenu());
+    }
+  }, [user, orgId, accId]);
+
   return (
     <div className="flex flex-col w-full ">
       {isLoggedIn &&

@@ -29,7 +29,7 @@ function Dashboard() {
   const handleClearFilter = async (event) => {
     await setFormData({});
     await setLegendClick(false);
-    await setActiveBtn("DAY")
+    await setActiveBtn("DAY");
     await dispatch(cleanLegendClickStatus());
     await dispatch(
       fetchDash({
@@ -41,25 +41,29 @@ function Dashboard() {
   const [activeBtn, setActiveBtn] = useState("DAY");
   const today = new Date();
 
-  const handleFetchDayData=()=>{ 
-    if(activeBtn === "WEEK"){
-      dispatch(fetchDash({
-        msgDateFrom: getDate7DaysAgo(),
-        msgDateTo: formatDate(today),
+  const handleFetchDayData = () => {
+    if (activeBtn === "WEEK") {
+      dispatch(
+        fetchDash({
+          msgDateFrom: getDate7DaysAgo(),
+          msgDateTo: formatDate(today),
           url: "api/v2/dash",
-        }));
+        })
+      );
     }
-    if(activeBtn === "MONTH"){
-      dispatch(fetchDash({
-        msgDateFrom: getDate30DaysAgo(),
-        msgDateTo: formatDate(today),
+    if (activeBtn === "MONTH") {
+      dispatch(
+        fetchDash({
+          msgDateFrom: getDate30DaysAgo(),
+          msgDateTo: formatDate(today),
           url: "api/v2/dash",
-        }));
+        })
+      );
     }
-  }
-  const handleClick =async (item) => {
+  };
+  const handleClick = async (item) => {
     await setActiveBtn(item);
-    await handleFetchDayData()
+    await handleFetchDayData();
   };
   async function fetchDashData() {
     dispatch(
@@ -95,33 +99,46 @@ function Dashboard() {
 
   useEffect(() => {
     if (Object.keys(formData).length > 0) {
-      fetchFilteredData();  
-    } else if (legendClickStatus) {  
+      fetchFilteredData();
+    } else if (legendClickStatus) {
       handleLegendClick();
-    } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {  
+    } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {
       handleFetchDayData();
+    } else {
+      fetchDashData();
     }
-    else {
-      fetchDashData();  
-    }
-    setInitialLoad(false); 
-  
-    const intervalId = setInterval(() => {
-      if (Object.keys(formData).length > 0) {
-        fetchFilteredData(); 
-      }else if (legendClickStatus) {  
-        handleLegendClick();
-      } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {  
-        handleFetchDayData();
-      } 
-       else {
-        fetchDashData();  
-      }
-    }, 10000);  
-  
-    return () => clearInterval(intervalId);  
-  }, [formData,legendClickStatus,activeBtn]);  
-  
+
+    setInitialLoad(false);
+  }, [formData, legendClickStatus, activeBtn]);
+
+  // useEffect(() => {
+  //   if (Object.keys(formData).length > 0) {
+  //     fetchFilteredData();
+  //   } else if (legendClickStatus) {
+  //     handleLegendClick();
+  //   } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {
+  //     handleFetchDayData();
+  //   }
+  //   else {
+  //     fetchDashData();
+  //   }
+  //   setInitialLoad(false);
+
+  //   const intervalId = setInterval(() => {
+  //     if (Object.keys(formData).length > 0) {
+  //       fetchFilteredData();
+  //     }else if (legendClickStatus) {
+  //       handleLegendClick();
+  //     } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {
+  //       handleFetchDayData();
+  //     }
+  //      else {
+  //       fetchDashData();
+  //     }
+  //   }, 10000);
+
+  //   return () => clearInterval(intervalId);
+  // }, [formData,legendClickStatus,activeBtn]);
 
   return (
     <>

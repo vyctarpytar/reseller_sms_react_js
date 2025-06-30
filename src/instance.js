@@ -19,6 +19,19 @@ const axiosInstance = axios.create({
     },
 });
 
+axiosInstance.interceptors.request.use((config) => {
+  const selectedOrg = localStorage.getItem("selectedOrg") || null;
+  const selectedAccount = localStorage.getItem("selectedAccount") || null;
+
+  config.params = {
+    ...(config.params || {}),
+    reseller_id: selectedOrg,
+    account_id: selectedAccount,
+  };
+
+  return config;
+});
+
 
 
 axiosInstance.interceptors.response.use(response => {

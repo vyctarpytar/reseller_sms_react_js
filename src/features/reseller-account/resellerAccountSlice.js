@@ -7,6 +7,7 @@ const url = process.env.REACT_APP_API_BASE_URL;
 const initialState = {
 	loading: false,
 	resellerAccountData: [], 
+	topResellerAccountData: [], 
 	singleAcc:{},
 };
 
@@ -20,7 +21,17 @@ const initialState = {
 	  return res;
 	}
   );
+ export const fetchTopResellerAccounts = createAsyncThunk(
+	"reseller/fetchTopResellerAccounts",
+	async (data) => {
+	  const res = await axiosInstance
+	  .get(`${url}/api/v2/account/reseller/${data?.resellerId}`)
+		.then((res) => res.data?.data?.result); 
+	  return res;
+	}
+  );
 
+  
   export const fetchSingleAccount = createAsyncThunk(
 	"account/fetchSingleAccount",
 	async (data) => {
@@ -65,6 +76,18 @@ export const resellerAccountSlice = createSlice({
 		  .addCase(fetchResellerAccounts.rejected, (state) => {
 			state.loading = false;
 			state.resellerAccountData = [];
+		  })
+
+		  .addCase(fetchTopResellerAccounts.pending, (state) => {
+			state.loading = true;
+		  })
+		  .addCase(fetchTopResellerAccounts.fulfilled, (state, action) => {
+			state.loading = false;
+			state.topResellerAccountData = action.payload;
+		  })
+		  .addCase(fetchTopResellerAccounts.rejected, (state) => {
+			state.loading = false;
+			state.topResellerAccountData = [];
 		  })
 
 

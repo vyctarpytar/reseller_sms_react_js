@@ -103,9 +103,9 @@ export default function SideBarClosed() {
   };
   useEffect(() => {}, [sideMenuCollapsed]);
 
-  useEffect(() => {
-    dispatch(fetchMenu());
-  }, []);
+  // useEffect(() => {
+  //   dispatch(fetchMenu());
+  // }, []);
   return (
     <>
       <div

@@ -24,6 +24,7 @@ import weiserLogo from "../assets/img/weiser-logo.png";
 import syncLogo from "../assets/img/sync-logo.png";
 import synctelLogo from "../assets/img/synctel-logo.jpeg" 
 import futuresoftLogo from "../assets/img/futuresoft-logo.png" 
+import HeaderCrumb from "./HeaderCrumb";
 
 export default function Header() {
   const { isLoggedIn, user } = useSelector((state) => state.auth);
@@ -188,8 +189,7 @@ export default function Header() {
     setSubdomain(getSubdomain());
   }, []);
 
- console.log("balanceHeader?.accName",balanceHeader?.accName)
-
+  
   return (
     <>
       <MobileDrawer onClose={onClose} open={open} />
@@ -226,6 +226,12 @@ export default function Header() {
             />
             {(user?.layer === "TOP" && subdomain === "smartgate") ? "Smartgate" : balanceHeader?.accName}
           </span>
+          {
+          user?.layer === 'TOP' && (
+            <div className="flex items-center ml-10"><HeaderCrumb/></div> 
+          )
+        }
+
         </div>
 
         {user?.layer != "TOP" && (
@@ -278,6 +284,7 @@ export default function Header() {
           </div>
         )}
 
+        
         <div className="gap-x-[1.25rem] flex items-center cursor-pointer ">
           <div className="lg:flex hidden gap-x-[20px]">
             <span className="flex  items-center gap-x-3">

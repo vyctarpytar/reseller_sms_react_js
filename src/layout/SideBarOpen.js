@@ -110,9 +110,9 @@ export default function SideBarOpen() {
 
   useEffect(() => {}, [sideMenuCollapsed]);
 
-  useEffect(() => {
-    dispatch(fetchMenu());
-  }, []);
+  // useEffect(() => {
+  //   dispatch(fetchMenu());
+  // }, []);
  
   return (
     
