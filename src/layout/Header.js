@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom"; 
+import { Link, useNavigate } from "react-router-dom";
 import svg19 from "../assets/svg/svg19.svg";
 import svg33 from "../assets/svg/svg33.svg";
 import svg34 from "../assets/svg/svg34.svg";
@@ -22,8 +22,8 @@ import {
 import { cashConverter, getSubdomain, numberWithCommas } from "../utils";
 import weiserLogo from "../assets/img/weiser-logo.png";
 import syncLogo from "../assets/img/sync-logo.png";
-import synctelLogo from "../assets/img/synctel-logo.jpeg" 
-import futuresoftLogo from "../assets/img/futuresoft-logo.png" 
+import synctelLogo from "../assets/img/synctel-logo.jpeg";
+import futuresoftLogo from "../assets/img/futuresoft-logo.png";
 import HeaderCrumb from "./HeaderCrumb";
 
 export default function Header() {
@@ -51,7 +51,7 @@ export default function Header() {
   async function handleLogout(e) {
     e.preventDefault();
     await dispatch(logout());
-    await dispatch(cleanBalanceHeader());  
+    await dispatch(cleanBalanceHeader());
     await dispatch(cleanResellerId());
     await localStorage.clear();
     await clean();
@@ -78,16 +78,16 @@ export default function Header() {
     navigate("/password-management");
   };
 
-  async function fetchBalanceData() { 
-    if (user?.layer === "RESELLER") { 
+  async function fetchBalanceData() {
+    if (user?.layer === "RESELLER") {
       dispatch(fetchResellerBalance());
     }
-    if (user?.layer === "ACCOUNT") { 
+    if (user?.layer === "ACCOUNT") {
       dispatch(fetchAccountBalance());
     }
-    if (user?.layer === "TOP") { 
+    if (user?.layer === "TOP") {
       dispatch(fetchTopBalance());
-    } 
+    }
   }
 
   useEffect(() => {
@@ -118,14 +118,18 @@ export default function Header() {
                     <span className="label_2">
                       {numberWithCommas(balanceHeader?.accUnits)} Units
                     </span>
-                    {
-                      (user?.layer === "RESELLER" ||  user?.layer === "TOP") && (
-                        <span className={`label_2 ${balanceHeader?.rsAllocatableMsgBal < 2000 ? '!text-red' : 'inherit'}`}>
-                        {numberWithCommas(balanceHeader?.rsAllocatableMsgBal)} Allocatable
-                        </span>
-                      )
-                    } 
-                  
+                    {(user?.layer === "RESELLER" || user?.layer === "TOP") && (
+                      <span
+                        className={`label_2 ${
+                          balanceHeader?.rsAllocatableMsgBal < 2000
+                            ? "!text-red"
+                            : "inherit"
+                        }`}
+                      >
+                        {numberWithCommas(balanceHeader?.rsAllocatableMsgBal)}{" "}
+                        Allocatable
+                      </span>
+                    )}
                   </>
                 )}
               </div>
@@ -189,13 +193,12 @@ export default function Header() {
     setSubdomain(getSubdomain());
   }, []);
 
-  
   return (
     <>
       <MobileDrawer onClose={onClose} open={open} />
       <div
         style={{
-          display: "flex", 
+          display: "flex",
           alignItems: "center",
           background: "#FFF",
           boxShadow: "0px 4px 4px 0px rgba(0, 0, 0, 0.05)",
@@ -214,87 +217,103 @@ export default function Header() {
           </div>
           <span
             className={`font-bold text-[25px] ${
-              subdomain === "synqafrica" || subdomain == "synqtel" ? "!text-syncBtn" : "text-darkGreen"
+              subdomain === "synqafrica" || subdomain == "synqtel"
+                ? "!text-syncBtn"
+                : "text-darkGreen"
             }  dash-title flex items-center`}
           >
             <img
               loading="lazy"
               decoding="async"
-              src={subdomain === "synqafrica" ? syncLogo : subdomain === "synqtel" ? synctelLogo : subdomain === "futuresoft" ? futuresoftLogo  : weiserLogo}
+              src={
+                subdomain === "synqafrica"
+                  ? syncLogo
+                  : subdomain === "synqtel"
+                  ? synctelLogo
+                  : subdomain === "futuresoft"
+                  ? futuresoftLogo
+                  : weiserLogo
+              }
               alt="logo"
-              className={`${subdomain === "synqtel"? 'h-[5vh]' : 'h-[7vh]' } object-contain`}
+              className={`${
+                subdomain === "synqtel" ? "h-[5vh]" : "h-[7vh]"
+              } object-contain`}
             />
-            {(user?.layer === "TOP" && subdomain === "smartgate") ? "Smartgate" : balanceHeader?.accName}
+            {user?.layer === "TOP" && subdomain === "smartgate"
+              ? "Smartgate"
+              : balanceHeader?.accName}
           </span>
-          {
-          user?.layer === 'TOP' && (
-            <div className="flex items-center ml-10"><HeaderCrumb/></div> 
-          )
-        }
-
+          {user?.layer === "TOP" && (
+            <div className="flex items-center ml-10">
+              <HeaderCrumb />
+            </div>
+          )}
         </div>
 
         {user?.layer != "TOP" && (
           <div className="lg:flex hidden gap-x-5">
-            {
-              user?.layer != "RESELLER" && (
-                <>
+            {user?.layer != "RESELLER" && (
+              <>
                 <div
-                className={`${
-                  balanceHeader?.accStatus === "OUT_OF_CREDIT"
-                    ? "bg-red"
-                    : subdomain === "synqafrica" ||  subdomain === "synqtel" ||  subdomain === "futuresoft"
-                    ? "bg-syncBtn"
-                    : "bg-darkGreen"
-                } px-3 py-2 text-white text-18 font-dmSans`}
-              >
-                Sms Bal: {cashConverter(balanceHeader?.accBalance)}
-              </div>
-               <div
-               className={`${
-                 balanceHeader?.accStatus === "OUT_OF_CREDIT"
-                   ? "bg-red"
-                     : subdomain === "synqafrica" ||  subdomain === "synqtel" ||  subdomain === "futuresoft"
-                   ? "bg-syncBtn"
-                   : "bg-darkGreen"
-               } px-3 py-2 text-white text-[18px] font-dmSans`}
-             >
-               Unit: {numberWithCommas(balanceHeader?.accUnits)}
-             </div>
-            </>
-              )
-            } 
-           
-            {
-              (user?.layer === "RESELLER" ||  user?.layer === "TOP") && (
+                  className={`${
+                    balanceHeader?.accStatus === "OUT_OF_CREDIT"
+                      ? "bg-red"
+                      : subdomain === "synqafrica" ||
+                        subdomain === "synqtel" ||
+                        subdomain === "futuresoft"
+                      ? "bg-syncBtn"
+                      : "bg-darkGreen"
+                  } px-3 py-2 text-white text-18 font-dmSans`}
+                >
+                  Sms Bal: {cashConverter(balanceHeader?.accBalance)}
+                </div>
                 <div
+                  className={`${
+                    balanceHeader?.accStatus === "OUT_OF_CREDIT"
+                      ? "bg-red"
+                      : subdomain === "synqafrica" ||
+                        subdomain === "synqtel" ||
+                        subdomain === "futuresoft"
+                      ? "bg-syncBtn"
+                      : "bg-darkGreen"
+                  } px-3 py-2 text-white text-[18px] font-dmSans`}
+                >
+                  Unit: {numberWithCommas(balanceHeader?.accUnits)}
+                </div>
+              </>
+            )}
+
+            {(user?.layer === "RESELLER" || user?.layer === "TOP") && (
+              <div
                 className={`${
                   balanceHeader?.rsAllocatableMsgBal < 2000
                     ? "bg-red"
-                      : subdomain === "synqafrica" ||  subdomain === "synqtel" ||  subdomain === "futuresoft"
+                    : subdomain === "synqafrica" ||
+                      subdomain === "synqtel" ||
+                      subdomain === "futuresoft"
                     ? "bg-syncBtn"
                     : "bg-darkGreen"
                 } px-3 py-2 text-white text-[18px] font-dmSans`}
               >
-                Units Balance: {numberWithCommas(balanceHeader?.rsAllocatableMsgBal)}
+                Units Balance:{" "}
+                {numberWithCommas(balanceHeader?.rsAllocatableMsgBal)}
               </div>
-              )
-            }
-          
+            )}
           </div>
         )}
 
-        
         <div className="gap-x-[1.25rem] flex items-center cursor-pointer ">
           <div className="lg:flex hidden gap-x-[20px]">
             <span className="flex  items-center gap-x-3">
               <span
                 className={`font-bold text-[16px] ${
-                  subdomain === "synqafrica" ||  subdomain === "synqtel"  ? "text-syncBtn" : "text-darkGreen"
+                  subdomain === "synqafrica" || subdomain === "synqtel"
+                    ? "text-syncBtn"
+                    : "text-darkGreen"
                 } dash-title`}
               >
                 {user?.layer}
-              </span> 
+              </span>
               <Tooltip placement="bottom" title={balanceHeader?.accStatus}>
                 {balanceHeader?.accStatus === "OUT_OF_CREDIT" ? (
                   <img src={svg33} alt={svg33} />

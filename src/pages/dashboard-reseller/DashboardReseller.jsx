@@ -26,10 +26,21 @@ function DashboardReseller() {
     setIsModalOpen(true);
   };
 
+  const { resellerData } = useSelector((state) => state.reseller);
+  const [selectedOrg, setSelectedOrg] = useState(
+    localStorage.getItem("selectedOrg")
+  );
+
+  const selectedOrgName = React.useMemo(() => {
+    if (!selectedOrg) return null;
+    const found = resellerData?.find((r) => r?.rsId === selectedOrg);
+    return found?.rsCompanyName ?? null;
+  }, [selectedOrg, resellerData]);
+
   const handleClearFilter = async (event) => {
     await setFormData({});
     await setLegendClick(false);
-    await setActiveBtn("DAY")
+    await setActiveBtn("DAY");
     await dispatch(cleanLegendClickStatus());
     await dispatch(
       fetchDash({
@@ -41,25 +52,29 @@ function DashboardReseller() {
   const [activeBtn, setActiveBtn] = useState("DAY");
   const today = new Date();
 
-  const handleFetchDayData=()=>{ 
-    if(activeBtn === "WEEK"){
-      dispatch(fetchDash({
-        msgDateFrom: getDate7DaysAgo(),
-        msgDateTo: formatDate(today),
+  const handleFetchDayData = () => {
+    if (activeBtn === "WEEK") {
+      dispatch(
+        fetchDash({
+          msgDateFrom: getDate7DaysAgo(),
+          msgDateTo: formatDate(today),
           url: "api/v2/dash",
-        }));
+        })
+      );
     }
-    if(activeBtn === "MONTH"){
-      dispatch(fetchDash({
-        msgDateFrom: getDate30DaysAgo(),
-        msgDateTo: formatDate(today),
+    if (activeBtn === "MONTH") {
+      dispatch(
+        fetchDash({
+          msgDateFrom: getDate30DaysAgo(),
+          msgDateTo: formatDate(today),
           url: "api/v2/dash",
-        }));
+        })
+      );
     }
-  }
-  const handleClick =async (item) => {
+  };
+  const handleClick = async (item) => {
     await setActiveBtn(item);
-    await handleFetchDayData()
+    await handleFetchDayData();
   };
 
   async function fetchDashData() {
@@ -96,43 +111,59 @@ function DashboardReseller() {
 
   useEffect(() => {
     if (Object.keys(formData).length > 0) {
-      fetchFilteredData();  
-    } else if (legendClickStatus) {  
+      fetchFilteredData();
+    } else if (legendClickStatus) {
       handleLegendClick();
-    } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {  
+    } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {
       handleFetchDayData();
+    } else {
+      fetchDashData();
     }
-    else {
-      fetchDashData();  
-    }
-    setInitialLoad(false); 
-  
-    const intervalId = setInterval(() => {
-      if (Object.keys(formData).length > 0) {
-        fetchFilteredData(); 
-      }else if (legendClickStatus) {  
-        handleLegendClick();
-      } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {  
-        handleFetchDayData();
-      } 
-       else {
-        fetchDashData();  
-      }
-    }, 10000);  
-  
-    return () => clearInterval(intervalId);  
-  }, [formData,legendClickStatus,activeBtn]);  
-  
+
+    setInitialLoad(false);
+  }, [formData, legendClickStatus, activeBtn]);
+
+  // useEffect(() => {
+  //   if (Object.keys(formData).length > 0) {
+  //     fetchFilteredData();
+  //   } else if (legendClickStatus) {
+  //     handleLegendClick();
+  //   } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {
+  //     handleFetchDayData();
+  //   }
+  //   else {
+  //     fetchDashData();
+  //   }
+  //   setInitialLoad(false);
+
+  //   const intervalId = setInterval(() => {
+  //     if (Object.keys(formData).length > 0) {
+  //       fetchFilteredData();
+  //     }else if (legendClickStatus) {
+  //       handleLegendClick();
+  //     } else if (activeBtn === "WEEK" || activeBtn === "MONTH") {
+  //       handleFetchDayData();
+  //     }
+  //      else {
+  //       fetchDashData();
+  //     }
+  //   }, 10000);
+
+  //   return () => clearInterval(intervalId);
+  // }, [formData,legendClickStatus,activeBtn]);
+
   return (
     <>
-       <div className="w-full h-full overflow-y-scroll bg-lightBlue lg:px-10 lg:py-10 py-5 px-3">
+      <div className="w-full h-full overflow-y-scroll bg-lightBlue lg:px-10 lg:py-10 py-5 px-3">
         {initialLoad && loading ? (
           <Skeleton />
         ) : (
           <>
-            <div className="grap-title">{balanceHeader?.accName}</div>
+            <div className="grap-title">
+              {selectedOrg ? selectedOrgName : balanceHeader?.accName}
+            </div>
             <div className="mt-[.81rem] mb-[1rem] grap-sub-title flex justify-between">
-              Total SMS summary in your account
+              Total SMS summary in your account ee
             </div>
             <div className="flex lg:flex-row flex-col mb-5 mt-2">
               <div className="flex items-center gap-x-0">

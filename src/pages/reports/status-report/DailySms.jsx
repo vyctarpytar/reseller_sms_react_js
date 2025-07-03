@@ -1,4 +1,4 @@
-import { Skeleton, Table, Tooltip } from "antd";
+import { Skeleton, Spin, Table, Tooltip } from "antd";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchDailySmsReport } from "../../../features/dashboard/dashboardSlice";
@@ -6,6 +6,7 @@ import {
   dateForHumans,
   formatDate,
   getDate7DaysAgo,
+  normalizeDateToLocalYear,
   numberWithCommas,
 } from "../../../utils";
 import MaterialIcon from "material-icons-react";
@@ -20,6 +21,8 @@ function DailySms() {
     (state) => state.dash
   );
   const { user } = useSelector((state) => state.auth);
+  const { saving } = useSelector((state) => state.save);
+
   const [formData, setFormData] = useState({});
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -30,8 +33,10 @@ function DailySms() {
   async function fetchDailySmsReportData(page, size) {
     dispatch(
       fetchDailySmsReport({
-        msgDateFrom: formData?.msgDateFrom ?? getDate7DaysAgo(),
-        msgDateTo: formData?.msgDateTo ?? formatDate(today),
+        msgDateFrom:
+          normalizeDateToLocalYear(formData?.msgDateFrom) ?? getDate7DaysAgo(),
+        msgDateTo:
+          normalizeDateToLocalYear(formData?.msgDateTo) ?? formatDate(today),
         msgAccId: user?.layer != "ACCOUNT" ? formData?.msgAccId : null,
         url: "api/v2/rpt/daily-sms-usage",
         limit: size ?? pageSize,
@@ -66,8 +71,10 @@ function DailySms() {
     const res = await dispatch(
       downloadExcel({
         url: "api/v2/rpt/daily-sms-usage-download-excel",
-        msgDateFrom: formData?.msgDateFrom ?? getDate7DaysAgo(),
-        msgDateTo: formData?.msgDateTo ?? formatDate(today),
+        msgDateFrom:
+          normalizeDateToLocalYear(formData?.msgDateFrom) ?? getDate7DaysAgo(),
+        msgDateTo:
+          normalizeDateToLocalYear(formData?.msgDateTo) ?? formatDate(today),
         msgAccId: user?.layer != "ACCOUNT" ? formData?.msgAccId : null,
       })
     );
@@ -97,7 +104,7 @@ function DailySms() {
     await setFormData({});
     const res = await dispatch(
       fetchDailySmsReport({
-        msgDateFrom:  getDate7DaysAgo(),
+        msgDateFrom: getDate7DaysAgo(),
         msgDateTo: formatDate(today),
         msgAccId: null,
         url: "api/v2/rpt/daily-sms-usage",
@@ -105,29 +112,25 @@ function DailySms() {
     );
   };
 
-  // useEffect(() => {
-  //   fetchDailySmsReportData();
-  // }, []);
-
   useEffect(() => {
-    // if (Object.keys(formData).length > 0) {
-    //   fetchDailySmsReportData();
-    // } else {
-    //   fetchDailySmsReportData();
-    // }
     fetchDailySmsReportData();
     setInitialLoad(false);
+  }, []);
 
-    const intervalId = setInterval(() => {
-      if (Object.keys(formData).length > 0) {
-        fetchDailySmsReportData();
-      } else {
-        fetchDailySmsReportData();
-      }
-    }, 20000);
+  // useEffect(() => {
+  //   fetchDailySmsReportData();
+  //   setInitialLoad(false);
 
-    return () => clearInterval(intervalId);
-  }, [formData]);
+  //   const intervalId = setInterval(() => {
+  //     if (Object.keys(formData).length > 0) {
+  //       fetchDailySmsReportData();
+  //     } else {
+  //       fetchDailySmsReportData();
+  //     }
+  //   }, 20000);
+
+  //   return () => clearInterval(intervalId);
+  // }, [formData]);
   return (
     <div className="w-full h-full overflow-y-scroll lg:px-10 px-3">
       <div className="flex items-center mt-10 justify-between">
@@ -156,18 +159,25 @@ function DailySms() {
         </div>
         <div className="flex justify-end item-center">
           <Tooltip placement="top" title={"Download Excel"}>
-            <button onClick={handleClick} className="flex items-center">
-              <MaterialIcon size={45} color="#00B050" icon="article" />
-              <span>Export to excel</span>
-            </button>
+            {saving ? (
+              <Spin className="sms-spin" />
+            ) : (
+              <button
+                disabled={saving}
+                onClick={handleClick}
+                className="flex items-center"
+              >
+                <MaterialIcon size={45} color="#00B050" icon="article" />
+                <span>Export to excel</span>
+              </button>
+            )}
           </Tooltip>
         </div>
       </div>
-      {
-        loading ? (
-          <Skeleton />
-        ):(
-          <Table
+      {loading ? (
+        <Skeleton />
+      ) : (
+        <Table
           className="mt-[1.31rem] w-full"
           scroll={{
             x: 800,
@@ -190,9 +200,8 @@ function DailySms() {
             hideOnSinglePage: true,
           }}
         />
-        )
-      }
-     
+      )}
+
       <FilterDailySmsModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}

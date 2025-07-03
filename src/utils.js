@@ -436,5 +436,15 @@ export const normalizeDateToLocalYearWTime = (date) => {
 };
  
 
+export const normalizeDateToLocalYear = (date) => {
+  if (!date) return null;
+  const jsDate = new Date(date);
+  const year = jsDate?.getFullYear();
+  const month = String(jsDate?.getMonth() + 1)?.padStart(2, "0");
+  const day = String(jsDate?.getDate())?.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+
 
  

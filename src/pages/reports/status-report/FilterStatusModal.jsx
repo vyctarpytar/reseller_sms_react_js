@@ -17,7 +17,7 @@ import svg37 from "../../../assets/svg/svg37.svg";
 import svg25 from "../../../assets/svg/svg25.svg";
 import moment from "moment";
 import { fetchStatusReport } from "../../../features/dashboard/dashboardSlice";
-import { disabledDate, formatDate, getDate7DaysAgo } from "../../../utils";
+import { disabledDate, formatDate, getDate7DaysAgo, normalizeDateToLocalYear } from "../../../utils";
 import { fetchResellerAccounts } from "../../../features/reseller-account/resellerAccountSlice";
 
 const { TextArea } = Input;
@@ -40,7 +40,8 @@ const FilterStatusModal = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loadingSms } = useSelector((state) => state.save);
+
+  const { loading } = useSelector((state) => state.dash);
   const { resellerAccountData } = useSelector((state) => state.resellerAccount);
   const { user } = useSelector((state) => state.auth);
 
@@ -166,8 +167,8 @@ const FilterStatusModal = ({
     }
     const res = await dispatch(
       fetchStatusReport({
-        msgDateFrom: formData?.msgDateFrom,
-        msgDateTo: formData?.msgDateTo,
+        msgDateFrom: normalizeDateToLocalYear(formData?.msgDateFrom),
+        msgDateTo: normalizeDateToLocalYear(formData?.msgDateTo),
         msgAccId: user?.layer != "ACCOUNT" ? formData?.msgAccId : null,
         url: "api/v2/rpt/status-sms-usage",
       })
@@ -380,8 +381,8 @@ const FilterStatusModal = ({
 
               {filters && filters?.length > 0 && (
                 <div className="w-[150px]">
-                  <button type="submit" className="cstm-btn">
-                    {loadingSms ? <Spin /> : "Submit"}
+                  <button disabled={loading} type="submit" className="cstm-btn">
+                    {loading ? <Spin /> : "Submit"}
                   </button>
                 </div>
               )}

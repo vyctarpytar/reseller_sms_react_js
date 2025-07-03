@@ -5,6 +5,7 @@ import {
   dateForHumans,
   formatDate,
   getDate7DaysAgo,
+  normalizeDateToLocalYear,
   numberWithCommas,
 } from "../../../utils";
 import MaterialIcon from "material-icons-react";
@@ -20,6 +21,7 @@ function StatusSummary() {
     (state) => state.dash
   );
   const { user } = useSelector((state) => state.auth);
+  const { saving } = useSelector((state) => state.save);
   const [formData, setFormData] = useState({});
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -35,8 +37,10 @@ function StatusSummary() {
   async function fetchStatusData(page, size) {
     dispatch(
       fetchStatusReport({
-        msgDateFrom: formData?.msgDateFrom ?? getDate7DaysAgo(),
-        msgDateTo: formData?.msgDateTo ?? formatDate(today),
+        msgDateFrom:
+          normalizeDateToLocalYear(formData?.msgDateFrom) ?? getDate7DaysAgo(),
+        msgDateTo:
+          normalizeDateToLocalYear(formData?.msgDateTo) ?? formatDate(today),
         msgAccId: user?.layer != "ACCOUNT" ? formData?.msgAccId : null,
         url: "api/v2/rpt/status-sms-usage",
         limit: size ?? pageSize,
@@ -67,8 +71,10 @@ function StatusSummary() {
     const res = await dispatch(
       downloadExcel({
         url: "api/v2/rpt/status-sms-summary-download-excel",
-        msgDateFrom: formData?.msgDateFrom ?? getDate7DaysAgo(),
-        msgDateTo: formData?.msgDateTo ?? formatDate(today),
+        msgDateFrom:
+          normalizeDateToLocalYear(formData?.msgDateFrom) ?? getDate7DaysAgo(),
+        msgDateTo:
+          normalizeDateToLocalYear(formData?.msgDateTo) ?? formatDate(today),
         msgAccId: user?.layer != "ACCOUNT" ? formData?.msgAccId : null,
       })
     );
@@ -93,37 +99,18 @@ function StatusSummary() {
     await setFormData({});
     const res = await dispatch(
       fetchStatusReport({
-        msgDateFrom:  getDate7DaysAgo(),
-        msgDateTo:  formatDate(today),
+        msgDateFrom: getDate7DaysAgo(),
+        msgDateTo: formatDate(today),
         msgAccId: null,
         url: "api/v2/rpt/status-sms-usage",
       })
     );
   };
 
-  // useEffect(() => {
-  //   fetchStatusData();
-  // }, []);
-
   useEffect(() => {
-    // if (Object.keys(formData).length > 0) {
-    //   fetchStatusData();
-    // } else {
-    //   fetchStatusData();
-    // }
     fetchStatusData();
     setInitialLoad(false);
-
-    const intervalId = setInterval(() => {
-      if (Object.keys(formData).length > 0) {
-        fetchStatusData();
-      } else {
-        fetchStatusData();
-      }
-    }, 20000);
-
-    return () => clearInterval(intervalId);
-  }, [formData]);
+  }, []);
 
   return (
     <div className="w-full h-full overflow-y-scroll lg:px-10 px-3">
@@ -153,18 +140,25 @@ function StatusSummary() {
         </div>
         <div className="flex justify-end item-center">
           <Tooltip placement="top" title={"Download Excel"}>
-            <button onClick={handleClick} className="flex items-center">
-              <MaterialIcon size={45} color="#00B050" icon="article" />
-              <span>Export to excel</span>
-            </button>
+            {saving ? (
+              <Spin className="sms-spin" />
+            ) : (
+              <button
+                disabled={saving}
+                onClick={handleClick}
+                className="flex items-center"
+              >
+                <MaterialIcon size={45} color="#00B050" icon="article" />
+                <span>Export to excel</span>
+              </button>
+            )}
           </Tooltip>
         </div>
       </div>
-      {
-        loading ? (
-          <Skeleton/>
-        ):(
-          <Table
+      {loading ? (
+        <Skeleton />
+      ) : (
+        <Table
           className="mt-[1.31rem] w-full"
           scroll={{
             x: 800,
@@ -187,9 +181,8 @@ function StatusSummary() {
             hideOnSinglePage: true,
           }}
         />
-        )
-      }
-   
+      )}
+
       <FilterStatusModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}

@@ -22,7 +22,7 @@ const HeaderCrumb = () => {
   );
 
   const { resellerData } = useSelector((state) => state.reseller);
-  const { resellerAccountData, topResellerAccountData } = useSelector(
+  const { topResellerAccountData } = useSelector(
     (state) => state.resellerAccount
   );
   const [searchValue, setSearchValue] = useState("");
@@ -34,13 +34,13 @@ const HeaderCrumb = () => {
     await localStorage.removeItem("selectedAccount");
     await setSelectedOrg(item?.rsId);
     await setSelectedAccount(null);
-    await navigate("/dashboard");
+    await navigate("/dashboard-main");
   };
 
   const handleAccClick = async (item) => {
     await localStorage.setItem("selectedAccount", item?.accId);
     await setSelectedAccount(item?.accId);
-    await navigate("/dashboard");
+    await navigate("/dashboard-main");
   };
 
   const filteredResellers = resellerData?.filter((item) =>
@@ -130,7 +130,7 @@ const HeaderCrumb = () => {
     setSelectedAccount(null);
     await navigate("/dashboard");
   };
-  
+
   return (
     <div>
       <Breadcrumb separator={<img src={svg83} alt="separator" />}>

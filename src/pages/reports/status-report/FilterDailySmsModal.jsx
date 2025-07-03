@@ -18,7 +18,7 @@ import svg25 from "../../../assets/svg/svg25.svg";
 import moment from "moment";
 import { fetchResellerAccounts } from "../../../features/reseller-account/resellerAccountSlice";
 import { fetchDailySmsReport } from "../../../features/dashboard/dashboardSlice";
-import { disabledDate, formatDate, getDate7DaysAgo } from "../../../utils";
+import { disabledDate, formatDate, getDate7DaysAgo, normalizeDateToLocalYear } from "../../../utils";
 
 const { TextArea } = Input;
 const FilterDailySmsModal = ({
@@ -39,7 +39,7 @@ const FilterDailySmsModal = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { loadingSms } = useSelector((state) => state.save);
+  const { loading } = useSelector((state) => state.dash);
   const { resellerAccountData } = useSelector((state) => state.resellerAccount);
   const { user } = useSelector((state) => state.auth);
 
@@ -161,8 +161,8 @@ const FilterDailySmsModal = ({
     }
     const res = await dispatch(
       fetchDailySmsReport({
-        msgDateFrom: formData?.msgDateFrom,
-        msgDateTo: formData?.msgDateTo,
+        msgDateFrom: normalizeDateToLocalYear(formData?.msgDateFrom),
+        msgDateTo: normalizeDateToLocalYear(formData?.msgDateTo),
         msgAccId: user?.layer != "ACCOUNT" ? formData?.msgAccId : null,
         url: "api/v2/rpt/daily-sms-usage",
       })
@@ -375,8 +375,8 @@ const FilterDailySmsModal = ({
 
               {filters && filters?.length > 0 && (
                 <div className="w-[150px]">
-                  <button type="submit" className="cstm-btn">
-                    {loadingSms ? <Spin /> : "Submit"}
+                  <button disabled={loading} type="submit" className="cstm-btn">
+                    {loading ? <Spin /> : "Submit"}
                   </button>
                 </div>
               )}

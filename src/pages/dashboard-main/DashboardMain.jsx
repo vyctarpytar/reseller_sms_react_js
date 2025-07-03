@@ -1,47 +1,44 @@
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { fetchAccountBalance, fetchResellerBalance, fetchTopBalance } from '../../features/menu/menuSlice';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import {
+  fetchAccountBalance,
+  fetchResellerBalance,
+  fetchTopBalance,
+} from "../../features/menu/menuSlice";
 
 function DashboardMain() {
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  const dispatch = useDispatch()
- 
+  const dispatch = useDispatch();
+  const orgId = localStorage.getItem("selectedOrg");
+  const accId = localStorage.getItem("selectedAccount");
 
-  async function fetchBalanceData() { 
-    console.log("dash-----")
-    if (user?.layer === "RESELLER") { 
-      dispatch(fetchResellerBalance());
-    }
-    if (user?.layer === "ACCOUNT") { 
+  const fetchBalanceData = () => {
+    if (user?.layer === "ACCOUNT" || accId) {
       dispatch(fetchAccountBalance());
-    }
-    if (user?.layer === "TOP") { 
+    } else if (user?.layer === "RESELLER" || orgId) {
+      dispatch(fetchResellerBalance());
+    } else if (user?.layer === "TOP") {
       dispatch(fetchTopBalance());
     }
-    
-  }
+  };
 
   useEffect(() => {
-    if (user?.layer === "RESELLER") {
-      navigate("/dashboard-reseller");
-    }
-    if (user?.layer === "ACCOUNT") {
+    fetchBalanceData();
+  }, [user, orgId, accId, dispatch]);
+
+  useEffect(() => {
+    if (user?.layer === "ACCOUNT" || accId) {
       navigate("/dashboard-account");
-    }
-    if (user?.layer === "TOP") {
+    } else if (user?.layer === "RESELLER" || orgId) {
+      navigate("/dashboard-reseller");
+    } else if (user?.layer === "TOP") {
       navigate("/dashboard");
     }
-  }, [user]);
+  }, [user, orgId, accId, navigate]);
 
-  useEffect(()=>{
-    fetchBalanceData()
-  },[user])
-  
-  return (
-    <div>DashboardMain</div>
-  )
+  return <div>DashboardMain</div>;
 }
 
-export default DashboardMain
+export default DashboardMain;

@@ -1,4 +1,4 @@
-import { Badge, Dropdown, Skeleton, Table, Tooltip } from "antd";
+import { Badge, Dropdown, Skeleton, Spin, Table, Tooltip } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import InsideHeader from "../../components/InsideHeader";
 import { useNavigate } from "react-router-dom";
@@ -6,7 +6,13 @@ import { useDispatch, useSelector } from "react-redux";
 import svg32 from "../../assets/svg/svg32.svg";
 import MaterialIcon from "material-icons-react";
 import { fetchSentSms } from "../../features/sms-request/smsRequestSlice";
-import { addSpaces, cashConverter, dateForHumans, formatDate, formatDateTime } from "../../utils";
+import {
+  addSpaces,
+  cashConverter,
+  dateForHumans,
+  formatDate,
+  formatDateTime,
+} from "../../utils";
 import noCon from "../../assets/img/noCon.png";
 import svg38 from "../../assets/svg/svg38.svg";
 import FilterModal from "./FilterModal";
@@ -21,6 +27,7 @@ function SentSmsList() {
   const [notOpen, setnotOpen] = useState(false);
   const { loading } = useSelector((state) => state.sms);
   const { user } = useSelector((state) => state.auth);
+  const { saving } = useSelector((state) => state.save);
   const { sentSmsData, loadingSms, sentSmsCount } = useSelector(
     (state) => state.save
   );
@@ -44,23 +51,24 @@ function SentSmsList() {
 
   const hasResellerName = sentSmsData?.some(
     (item) =>
-      item?.msgResellerName !== null && item?.msgResellerName !== undefined && user?.layer === "TOP"
+      item?.msgResellerName !== null &&
+      item?.msgResellerName !== undefined &&
+      user?.layer === "TOP"
   );
- 
 
-  const columns = [ 
+  const columns = [
     {
       title: "Text",
       render: (item) => {
         return (
           <>
             <Tooltip title={item}>
-              <div className="text-[14px]">{truncateText(item,150)}</div>
+              <div className="text-[14px]">{truncateText(item, 150)}</div>
             </Tooltip>
           </>
         );
       },
-      width: "30%", 
+      width: "30%",
       dataIndex: "msgMessage",
     },
     ...(hasResellerName
@@ -70,7 +78,7 @@ function SentSmsList() {
             render: (item) => {
               return <div>{item}</div>;
             },
-            width: "10%", 
+            width: "10%",
             dataIndex: "msgResellerName",
           },
         ]
@@ -84,7 +92,7 @@ function SentSmsList() {
       title: "Sender Name",
       dataIndex: "msgSenderIdName",
       width: "5%",
-    }, 
+    },
     {
       title: "Phone Number",
       render: (item) => {
@@ -120,7 +128,7 @@ function SentSmsList() {
       width: "10%",
     },
     {
-      title: "Pages", 
+      title: "Pages",
       dataIndex: "msgPage",
       width: "5%",
     },
@@ -141,7 +149,7 @@ function SentSmsList() {
       width: "10%",
     },
     {
-      title: "Sent By", 
+      title: "Sent By",
       dataIndex: "msgCreatedByEmail",
       width: "10%",
     },
@@ -165,8 +173,8 @@ function SentSmsList() {
         msgMessage: null,
         msgAccId: null,
         msgSenderId: null,
-        msgCreatedFrom:null,
-        msgCreatedTo:null,
+        msgCreatedFrom: null,
+        msgCreatedTo: null,
       })
     );
   };
@@ -180,9 +188,9 @@ function SentSmsList() {
         url: "api/v2/sms",
         limit: size ?? pageSize,
         start: page ?? pageIndex,
-        msgStatus: formData?.msgStatus, 
-        msgCreatedFrom:formData?.msgCreatedFrom,
-        msgCreatedTo:formData?.msgCreatedTo,
+        msgStatus: formData?.msgStatus,
+        msgCreatedFrom: formData?.msgCreatedFrom,
+        msgCreatedTo: formData?.msgCreatedTo,
         msgSubmobileNo: formData?.msgSubmobileNo,
         msgMessage: formData?.msgMessage,
         msgAccId: formData?.msgAccId,
@@ -191,15 +199,13 @@ function SentSmsList() {
     );
   }
 
- 
-
   const handleClick = async (item) => {
     const res = await dispatch(
       downloadExcel({
         url: "api/v2/sms/download-excel",
         msgStatus: formData?.msgStatus,
-        msgCreatedFrom:formData?.msgCreatedFrom,
-        msgCreatedTo:formData?.msgCreatedTo,
+        msgCreatedFrom: formData?.msgCreatedFrom,
+        msgCreatedTo: formData?.msgCreatedTo,
         msgSubmobileNo: formData?.msgSubmobileNo,
         msgMessage: formData?.msgMessage,
         msgAccId: formData?.msgAccId,
@@ -283,13 +289,24 @@ function SentSmsList() {
               </div>
 
               {sentSmsData?.length > 0 && (
-                <div className="flex justify-end item-center"> 
-                  <Tooltip placement="top" title={"Download Excel"}>  
-                    <button onClick={handleClick} className="flex items-center"> 
-                      <MaterialIcon size={45} color="#00B050" icon="article" />
-                      <span>Export to excel</span>
-                    </button>
-                  </Tooltip>
+                <div className="flex justify-end item-center">
+                  {saving ? (
+                    <Spin className="sms-spin" />
+                  ) : (
+                    <Tooltip placement="top" title={"Download Excel"}>
+                      <button
+                        onClick={handleClick}
+                        className="flex items-center"
+                      >
+                        <MaterialIcon
+                          size={45}
+                          color="#00B050"
+                          icon="article"
+                        />
+                        <span>Export to excel</span>
+                      </button>
+                    </Tooltip>
+                  )}
                 </div>
               )}
             </div>
