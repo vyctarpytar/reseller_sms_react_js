@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Card, Form, Input, Modal, Spin } from "antd";
+import { Button, Card, DatePicker, Form, Input, Modal, Spin } from "antd";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import MaterialIcon from "material-icons-react";
@@ -8,10 +8,11 @@ import toast from "react-hot-toast";
 import {
   formatImgPath,
   formatPath,
+  normalizeDateToLocalYearOnly,
   removeCommas,
   removeNegative,
 } from "../../utils";
-import { instTypeData, userData } from "../../data";
+import dayjs from "dayjs";
 import { save, saveFile } from "../../features/save/saveSlice";
 import PhoneInput from "react-phone-input-2";
 import { fetchReseller } from "../../features/reseller/resellerSlice";
@@ -20,7 +21,6 @@ import uplooadSimple from "../../assets/svg/UploadSimple.svg";
 
 const { TextArea } = Input;
 const AccountAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
-  console.log("prodd", prodd);
   const handleOk = () => {
     setIsModalOpen(false);
   };
@@ -59,9 +59,17 @@ const AccountAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
     }));
   };
 
-  useEffect(() => {
-    setFormData(prodd);
-  }, [prodd]);
+useEffect(() => {
+  if (prodd) {
+    setFormData({
+      ...prodd,
+      accLicenceValidity: prodd?.accLicenceValidity
+      ? dayjs(prodd?.accLicenceValidity.toString(), "YYYY")  
+      : null,
+    });
+  }
+}, [prodd]);
+
 
   const onChange = async (e) => {
     setFormData((prev) => ({
@@ -69,11 +77,18 @@ const AccountAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
       [e.target.name]: e.target.value,
     }));
   };
+    function onMonthChange(value) {
+    setFormData((prevData) => ({
+      ...prevData,
+      accLicenceValidity: value,
+    }));
+  }
+
 
   function fetchResellerAccountData() {
     dispatch(fetchResellerAccounts());
   }
-
+  
   const onFinish = async (data) => {
     // if (!formData?.accAssignedTo) {
     //   toast.error("Please select user to assign");
@@ -100,14 +115,16 @@ const AccountAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
         accKraFileName: fileKra,
         accIncorporationCertFileName: fileIncop,
         accAuthorizationFileName: fileAuth,
+        accLicenceValidity:normalizeDateToLocalYearOnly(formData?.accLicenceValidity),
+        accMsgBal:formData?.accMsgBal
       })
     );
     if (res?.payload?.success) {
       await toast.success(res?.payload?.messages?.message);
-      await fetchResellerAccountData(); 
+      await fetchResellerAccountData();
       await form.resetFields();
       await setIsModalOpen(false);
-      await  navigate('/sender-id-list')
+      await navigate("/sender-id-list");
     } else {
       toast.error(res?.payload?.messages?.message);
     }
@@ -184,11 +201,14 @@ const AccountAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
   async function handleCancelAuth() {
     await setfileAuth();
   }
+  console.log("prodd",prodd)
   return (
     <>
       <Modal
         className=""
-        title={`${prodd?.accId ? `Update Account - ${prodd.accId}` : 'New Account'}`}
+        title={`${
+          prodd?.accId ? `Update Account - ${prodd.accId}` : "New Account"
+        }`}
         open={isModalOpen}
         onOk={onFinish}
         onCancel={handleCancel}
@@ -300,6 +320,34 @@ const AccountAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
                 className="input"
               />
             </Form.Item>
+            {
+              prodd?.accId && (
+ <Form.Item
+              label={
+                <span>
+                  Credit Balance<span className="text-[#FF0000]">*</span>
+                </span>
+              }
+              rules={[
+                {
+                  required: true,
+                  message: "Please add Credit Balance",
+                },
+              ]}
+            >
+              <Input
+                required
+                type="number"
+                name="accMsgBal"
+                onChange={onChange}
+                value={formData?.accMsgBal}
+                className="input"
+              />
+            </Form.Item>
+              )
+            }
+            
+            
 
             <Form.Item
               label="Website"
@@ -480,6 +528,21 @@ const AccountAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
                 onChange={onChange}
                 value={formData?.accPhysicalAddress}
                 className="input"
+              />
+            </Form.Item>
+
+            <Form.Item label="License Validity" className="mr-6 w-full">
+              <DatePicker
+                name="accLicenceValidity"
+                style={{
+                  width: "100%",
+                  height: "42px",
+                }}
+                className="mr-3"
+                picker="year"
+                format={"YYYY"}
+                value={formData?.accLicenceValidity}
+                onChange={onMonthChange}
               />
             </Form.Item>
 

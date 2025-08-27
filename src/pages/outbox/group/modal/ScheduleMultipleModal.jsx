@@ -17,17 +17,18 @@ import {
   getTomorrowDateAfternoon,
   getTomorrowDateMorning,
 } from "../../../../utils";
+import dayjs from "dayjs";
 
 const { TextArea } = Input;
 const ScheduleMultipleModal = ({
   isModalOpen,
   setIsModalOpen,
   setInputValue,
-  title, 
+  title,
   setIsModalOpenPrev,
   message,
   mobile,
-  senderId, 
+  senderId,
 }) => {
   const handleOk = () => {
     setIsModalOpen(false);
@@ -47,21 +48,17 @@ const ScheduleMultipleModal = ({
 
   const [data, setdata] = useState({});
 
-  const onOk = (value) => {
-  };
+  const onOk = (value) => {};
 
   const [dateSchedule, setDateSchedule] = useState("");
   const [activeSchedule, setActiveSchedule] = useState("");
   const [showDate, setShowDate] = useState(false);
 
-
   const handleCancel = async () => {
     await setIsModalOpen(false);
     await setShowDate(false);
-    await setActiveSchedule(false)
+    await setActiveSchedule(false);
   };
-
- 
 
   const onFinish = async (data) => {
     if (!dateSchedule) {
@@ -74,7 +71,7 @@ const ScheduleMultipleModal = ({
         message: message,
         mobile: mobile,
         senderId: senderId,
-        sendAt: dateSchedule, 
+        sendAt: dateSchedule,
       })
     );
     if (res?.payload?.success) {
@@ -87,7 +84,6 @@ const ScheduleMultipleModal = ({
       toast.error(res?.payload?.messages?.message);
     }
   };
- 
 
   return (
     <>
@@ -137,10 +133,28 @@ const ScheduleMultipleModal = ({
                 placeholder="Select Date"
                 className="mr-3 border border-black"
                 format={"YYYY-MM-DD HH:mm"}
-                onChange={(value, dateString) => { 
+                onChange={(value, dateString) => {
                   setDateSchedule(dateString);
                 }}
-                onOk={onOk} 
+                disabledDate={(current) => {
+                  return current && current < dayjs().startOf("day");
+                }}
+                disabledTime={(current) => {
+                  if (!current) return {};
+                  const now = dayjs();
+                  if (current?.isSame(now, "day")) {
+                    return {
+                      disabledHours: () => [...Array(now?.hour())?.keys()],
+                      disabledMinutes: (hour) =>
+                        hour === now?.hour()
+                          ? [...Array(now?.minute())?.keys()]
+                          : [],
+                      disabledSeconds: () => [],
+                    };
+                  }
+                  return {};
+                }}
+                onOk={onOk}
               />
             </Form.Item>
           ) : (

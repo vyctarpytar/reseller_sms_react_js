@@ -180,15 +180,15 @@ const ResellerAddModal = ({
     };
   }, [previewUrl]);
 
-  useEffect(() => {
-    if (prodd?.rsId) {
-      dispatch(
-        fetchResellerImage({
-          rsId: prodd?.rsId,
-        })
-      );
-    }
-  }, [prodd]);
+  // useEffect(() => {
+  //   if (prodd?.rsId) {
+  //     dispatch(
+  //       fetchResellerImage({
+  //         rsId: prodd?.rsId,
+  //       })
+  //     );
+  //   }
+  // }, [prodd]);
 
   return (
     <>
@@ -214,7 +214,7 @@ const ResellerAddModal = ({
           }}
           form={form}
         >
-          <Form.Item
+          {/* <Form.Item
             label={
               <span>
                 Reseller Logo<span className="text-[#FF0000]"></span>
@@ -291,7 +291,7 @@ const ResellerAddModal = ({
                 )}
               </div>
             )}
-          </Form.Item>
+          </Form.Item> */}
           <div className="grid lg:grid-cols-2 grid-cols-1 lg:gap-x-5 lg:gap-y-0 gap-y-5">
             <Form.Item
               label={

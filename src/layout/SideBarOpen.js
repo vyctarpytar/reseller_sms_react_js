@@ -16,6 +16,7 @@ import creditSvg from "../assets/svg/creditSvg.svg";
 import adminAccountSvg from "../assets/svg/adminAccountSvg.svg";
 import externalSvg from "../assets/svg/externalSvg.svg";
 import withdrawalSvg from "../assets/svg/withdrawalSvg.svg";
+import reportSvg from "../assets/svg/svg60.svg";
 
 const icons = {
   gridSvg,
@@ -29,7 +30,8 @@ const icons = {
   creditSvg,
   adminAccountSvg,
   externalSvg,
-  withdrawalSvg
+  withdrawalSvg,
+  reportSvg
 };
 function getItem(label, key, icon, children, type) {
   return {

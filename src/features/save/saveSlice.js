@@ -56,6 +56,28 @@ export const saveForget = createAsyncThunk('saveSlice/save', async (data, { reje
 	}
   });
 
+  export const deleteRequest = createAsyncThunk(
+  "deleteSlice/delete/ordinary",
+  async (data, { rejectWithValue }) => {
+    let deleteUrl = data.url;
+    delete data.url; 
+
+    try {
+      const response = await axiosInstance.delete(`/${deleteUrl}`, {
+        data, 
+      });
+
+      if (!response.data.success) {
+        return rejectWithValue(response.data);
+      }
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
 export const saveFile = createAsyncThunk('saveSlice/saveFile', async (data) => {
 	const res = await axiosInstance
 		.post(`${url}/api/v2/req/file-upload`, data, {
@@ -192,7 +214,18 @@ export const saveSlice = createSlice({
 			.addCase(save.rejected, (state) => {
 				state.saving = false;
 			})
+ 
+			.addCase(deleteRequest.pending, (state) => {
+				state.saving = true;
+			})
+			.addCase(deleteRequest.fulfilled, (state, action) => {
+				state.saving = false; 
+			})
+			.addCase(deleteRequest.rejected, (state) => {
+				state.saving = false;
+			})
 
+			
 
 			.addCase(saveFile.pending, (state) => {
 				state.saving = true;
@@ -292,6 +325,8 @@ export const saveSlice = createSlice({
 				state.scheduledSmsCount = 0
 			})
 
+
+			
 			
 
 

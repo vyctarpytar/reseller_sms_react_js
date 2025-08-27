@@ -1,38 +1,68 @@
 import { Badge, Dropdown, Skeleton, Table, Tooltip } from "antd";
 import React, { useEffect, useRef, useState } from "react";
 import InsideHeader from "../../components/InsideHeader";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import svg32 from "../../assets/svg/svg32.svg";
-import MaterialIcon from "material-icons-react";
-import { fetchSentSms } from "../../features/sms-request/smsRequestSlice";
-import { addSpaces, cashConverter, dateForHumans, formatDate, formatDateTime } from "../../utils";
+import svg2 from "../../assets/svg/svg2.svg";
+import svg27 from "../../assets/svg/svg27.svg";
+import svg48 from "../../assets/svg/svg48.svg";
+import MaterialIcon from "material-icons-react"; 
+import { formatDateTime } from "../../utils";
 import noCon from "../../assets/img/noCon.png";
 import svg38 from "../../assets/svg/svg38.svg";
 import FilterModal from "./FilterModal";
 import {
-  downloadExcel,
-  fetchScheduledSms,
-  save,
+  deleteRequest, 
+  fetchScheduledSms, 
 } from "../../features/save/saveSlice";
 import toast from "react-hot-toast";
+import useModalToggle from "../../custom_hooks/useModalToggle";
+import ConfirmModal from "../../components/ConfirmModal";
+import RescheduleModal from "./RescheduleModal";
 
 function ScheduledSmsList() {
   const [notOpen, setnotOpen] = useState(false);
   const { loading } = useSelector((state) => state.sms);
   const { user } = useSelector((state) => state.auth);
-  const { scheduledSmsData, loadingSms, scheduledSmsCount } = useSelector(
-    (state) => state.save
-  );
+  const { scheduledSmsData, loadingSms, scheduledSmsCount, saving } =
+    useSelector((state) => state.save);
 
   const [formData, setFormData] = useState({});
-  const handleOpenChange = () => {
-    setnotOpen(false);
-  };
+ 
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const showModal = () => {
     setIsModalOpen(true);
+  };
+
+  const { open, handleOpen, handleCancel } = useModalToggle();
+  const [prodd, setProdd] = useState();
+
+  const [openDelete, setOpenDelete] = useState(false);
+  const handleOpenDelete = async (item) => {
+    await setOpenDelete(true);
+  };
+  const handleCloseDelete = async () => {
+    await setOpenDelete(false);
+  };
+  const handleDelete = async () => {
+    const res = await dispatch(
+      deleteRequest({
+        url: `api/v2/schedule/delete/${prodd?.schId}`, 
+      })
+    );
+    if (res?.payload?.success) {
+      toast.success(res?.payload?.messages?.message);
+      setOpenDelete(false);
+      fetchscheduledSmsData();
+    } else {
+      toast.error(res?.payload?.message);
+    }
+  };
+
+  const handleReschedule = () => {
+    handleOpen();
   };
 
   const truncateText = (text, maxLength) => {
@@ -42,15 +72,38 @@ function ScheduledSmsList() {
     return text;
   };
 
-  const hasResellerName = scheduledSmsData?.some(
-    (item) =>
-      item?.msgResellerName !== null && item?.msgResellerName !== undefined && user?.layer === "TOP"
-  );
- 
-
+  const settingItems = [
+    {
+      key: "1",
+      label: (
+        <Link
+          className="flex gap-x-[.75rem] items-center py-[.5rem]"
+          onClick={handleReschedule}
+        >
+          <img src={svg2} alt="svg2" className="w-4 h-4" /> Reschedule
+        </Link>
+      ),
+    },
+    {
+      key: "divider-1",
+      type: "divider",
+    },
+    {
+      key: "2",
+      label: (
+        <Link
+          className="flex gap-x-[.75rem] items-center py-[.5rem]"
+          onClick={() => handleOpenDelete("ARCHIEVE")}
+        >
+          <img src={svg48} alt="svg48" className="w-4 h-4" />
+          <span className="whitespace-nowrap">Delete</span>
+        </Link>
+      ),
+    },
+  ];
   const columns = [ 
     {
-      title: "Created By Name",  
+      title: "Created By Name",
       dataIndex: "schCreatedByName",
     },
     {
@@ -58,39 +111,35 @@ function ScheduledSmsList() {
       render: (item) => {
         return <div>{formatDateTime(item)}</div>;
       },
-      dataIndex: "schCreatedOn", 
+      dataIndex: "schCreatedOn",
     },
     {
-      title: "Sender Name",
-      width: "10%",
-      dataIndex: "schMessage", 
-    }, 
+      title: "Message",
+      dataIndex: "schMessage",
+    },
     {
-      title: "Release Time", 
-      dataIndex: "schReleaseTime", 
-    }, 
+      title: "Release Time",
+      dataIndex: "schReleaseTime",
+    },
     {
-      title: "Sender ID", 
-      dataIndex: "schSenderid", 
-    }, 
+      title: "Sender ID",
+      dataIndex: "schSenderid",
+    },
     {
-      title: "Phone Number", 
-      dataIndex: "schPhoneNumber", 
-    }, 
-    
+      title: "Group Name",
+      dataIndex: "schGroupName",
+    },
+
     {
       title: "Status",
       render: (item) => {
         return (
           <div
-            className={`${
-              item?.schStatus == "SENT"
-                ? "text-[#8884d8]"
-                : item?.schStatus == "DeliveredToTerminal"
+            className={`${  item?.schStatus == "SENT"
                 ? "text-[#388E3C]"
-                : item?.schStatus == "Exception sending "
+                : item?.schStatus == "PENDING"
                 ? "text-[#ffa500]"
-                : item?.schStatus == "InvalidMsisdn"
+                : item?.schStatus == "DISABLED"
                 ? "text-[#ff0000]"
                 : item?.schStatus == "DeliveryImpossible"
                 ? "text-[#808080]"
@@ -102,9 +151,25 @@ function ScheduledSmsList() {
           </div>
         );
       },
-      
     },
-    
+    {
+  title: "Actions",
+  render: (item) => (
+    item.schStatus === "PENDING" ? (   
+      <Dropdown
+        overlayStyle={{ width: "250px" }}
+        trigger={["click"]}
+        menu={{ items: settingItems }}
+        placement="bottom"
+      >
+        <button onClick={() => setProdd(item)}>
+          <img src={svg27} alt="svg27" />
+        </button>
+      </Dropdown>
+    ) : null
+  ),
+}
+
   ];
 
   const navigate = useNavigate();
@@ -121,7 +186,7 @@ function ScheduledSmsList() {
         url: "api/v2/schedule",
         schUsrId: null,
         schAccId: null,
-        schGrpId: null, 
+        schGrpId: null,
       })
     );
   };
@@ -137,16 +202,10 @@ function ScheduledSmsList() {
         start: page ?? pageIndex,
         schUsrId: formData?.schUsrId,
         schAccId: formData?.schAccId,
-        schGrpId: formData?.schGrpId, 
+        schGrpId: formData?.schGrpId,
       })
     );
   }
-
- 
-
-  const handleClick = async (item) => {
-    
-  };
 
   useEffect(() => {
     fetchscheduledSmsData();
@@ -205,8 +264,6 @@ function ScheduledSmsList() {
                   )}
                 </div>
               </div>
- 
-             
             </div>
             <div className="ml-[20%]"></div>
           </div>
@@ -219,7 +276,7 @@ function ScheduledSmsList() {
                   className="mt-[1.31rem] w-full mb-10"
                   scroll={{
                     // x: "max-content",
-                    x: 1600,
+                    x: "auto",
                   }}
                   pagination={{
                     position: ["bottomCenter"],
@@ -257,6 +314,17 @@ function ScheduledSmsList() {
         formData={formData}
         setFormData={setFormData}
       />
+
+      <ConfirmModal
+        open={openDelete}
+        handleCancel={handleCloseDelete}
+        handleSubmit={handleDelete}
+        loading={saving}
+        content={"Are you sure you want to stop this sms"}
+        type="alert"
+        btnTitle="Confirm"
+      />
+      <RescheduleModal open={open} handleCancel={handleCancel} prodd={prodd} handleFetch={fetchscheduledSmsData} />
     </>
   );
 }

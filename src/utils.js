@@ -446,5 +446,23 @@ export const normalizeDateToLocalYear = (date) => {
 };
 
 
+export const normalizeDateToLocalYearOnly = (date) => {
+  if (!date) return null;
+  const jsDate = new Date(date);
+  const year = jsDate?.getFullYear();
+  const month = String(jsDate?.getMonth() + 1)?.padStart(2, "0");
+  const day = String(jsDate?.getDate())?.padStart(2, "0");
+  return `${year}`;
+};
+
+
+export const formatText = (str) => {
+  if (typeof str !== "string") return "";
+  return str
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
 
  

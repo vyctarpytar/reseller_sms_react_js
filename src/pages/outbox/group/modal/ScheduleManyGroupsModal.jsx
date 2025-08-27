@@ -17,6 +17,7 @@ import {
   getTomorrowDateAfternoon,
   getTomorrowDateMorning,
 } from "../../../../utils";
+import dayjs from "dayjs";
 
 const { TextArea } = Input;
 const ScheduleManyGroupsModal = ({
@@ -27,7 +28,7 @@ const ScheduleManyGroupsModal = ({
   inputValue,
   setIsModalOpenPrev,
   grpIds,
-  senderId
+  senderId,
 }) => {
   const handleOk = () => {
     setIsModalOpen(false);
@@ -47,20 +48,18 @@ const ScheduleManyGroupsModal = ({
 
   const [data, setdata] = useState({});
 
-  const onOk = (value) => {
-  };
+  const onOk = (value) => {};
 
   const [dateSchedule, setDateSchedule] = useState("");
   const [activeSchedule, setActiveSchedule] = useState("");
   const [showDate, setShowDate] = useState(false);
 
-
   const handleCancel = async () => {
     await setIsModalOpen(false);
     await setShowDate(false);
-    await setActiveSchedule(false)
+    await setActiveSchedule(false);
   };
- 
+
   const onFinish = async (data) => {
     if (!dateSchedule) {
       toast.error("Select date & time");
@@ -71,8 +70,8 @@ const ScheduleManyGroupsModal = ({
         url: `api/v2/sms/multi-group`,
         grpMessage: inputValue,
         grpSendAt: dateSchedule,
-        grpIds:grpIds,
-        senderId:senderId
+        grpIds: grpIds,
+        senderId: senderId,
       })
     );
     if (res?.payload?.success) {
@@ -86,8 +85,6 @@ const ScheduleManyGroupsModal = ({
       toast.error(res?.payload?.messages?.message);
     }
   };
-
- 
 
   return (
     <>
@@ -139,6 +136,24 @@ const ScheduleManyGroupsModal = ({
                 format={"YYYY-MM-DD HH:mm"}
                 onChange={(value, dateString) => {
                   setDateSchedule(dateString);
+                }}
+                disabledDate={(current) => {
+                  return current && current < dayjs().startOf("day");
+                }}
+                disabledTime={(current) => {
+                  if (!current) return {};
+                  const now = dayjs();
+                  if (current?.isSame(now, "day")) {
+                    return {
+                      disabledHours: () => [...Array(now?.hour())?.keys()],
+                      disabledMinutes: (hour) =>
+                        hour === now?.hour()
+                          ? [...Array(now?.minute())?.keys()]
+                          : [],
+                      disabledSeconds: () => [],
+                    };
+                  }
+                  return {};
                 }}
                 onOk={onOk}
               />

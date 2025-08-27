@@ -340,7 +340,7 @@ const UsersAddModal = ({ isModalOpen, setIsModalOpen, prodd }) => {
                     )
                   }
                   onDropdownVisibleChange={() => {
-                    // fetchDistinctStatusData();
+                    fetchDistinctStatusData();
                   }}
                 />
               </Form.Item>

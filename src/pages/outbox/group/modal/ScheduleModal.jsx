@@ -17,6 +17,7 @@ import {
   getTomorrowDateAfternoon,
   getTomorrowDateMorning,
 } from "../../../../utils";
+import dayjs from "dayjs";
 
 const { TextArea } = Input;
 const ScheduleModal = ({
@@ -26,12 +27,12 @@ const ScheduleModal = ({
   title,
   inputValue,
   setIsModalOpenPrev,
-  senderId
+  senderId,
 }) => {
   const handleOk = () => {
     setIsModalOpen(false);
   };
- 
+
   const [form] = Form.useForm();
   const formRef = useRef(null);
   const { user } = useSelector((state) => state.auth);
@@ -46,18 +47,16 @@ const ScheduleModal = ({
 
   const [data, setdata] = useState({});
 
-  const onOk = (value) => {
-  };
+  const onOk = (value) => {};
 
   const [dateSchedule, setDateSchedule] = useState("");
   const [activeSchedule, setActiveSchedule] = useState("");
   const [showDate, setShowDate] = useState(false);
 
-
   const handleCancel = async () => {
     await setIsModalOpen(false);
     await setShowDate(false);
-    await setActiveSchedule(false)
+    await setActiveSchedule(false);
   };
 
   const onFinish = async (data) => {
@@ -70,7 +69,7 @@ const ScheduleModal = ({
         url: `api/v2/sms/group/${folderObj?.groupId}`,
         grpMessage: inputValue,
         grpSendAt: dateSchedule,
-        senderId:senderId
+        senderId: senderId,
       })
     );
     if (res?.payload?.success) {
@@ -80,13 +79,10 @@ const ScheduleModal = ({
       await setIsModalOpen(false);
       await setIsModalOpenPrev(false);
       await navigate("/scheduled-sms");
-     
     } else {
       toast.error(res?.payload?.messages?.message);
     }
   };
-
- 
 
   return (
     <>
@@ -138,6 +134,24 @@ const ScheduleModal = ({
                 format={"YYYY-MM-DD HH:mm"}
                 onChange={(value, dateString) => {
                   setDateSchedule(dateString);
+                }}
+                disabledDate={(current) => {
+                  return current && current < dayjs().startOf("day");
+                }}
+                disabledTime={(current) => {
+                  if (!current) return {};
+                  const now = dayjs();
+                  if (current?.isSame(now, "day")) {
+                    return {
+                      disabledHours: () => [...Array(now?.hour())?.keys()],
+                      disabledMinutes: (hour) =>
+                        hour === now?.hour()
+                          ? [...Array(now?.minute())?.keys()]
+                          : [],
+                      disabledSeconds: () => [],
+                    };
+                  }
+                  return {};
                 }}
                 onOk={onOk}
               />
