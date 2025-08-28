@@ -91,9 +91,21 @@ export default function SideBarOpen() {
    
   ];
 
-  const handleNavigation = (e) => {
-    navigate(e.key);
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const [lastSelectedKey, setLastSelectedKey] = useState(null);
+
+  const handleNavigation = async (e) => {
+    setLastSelectedKey(e.key);
+    await navigate(e.key);
   };
+
+  const selectedKeyFromPath = currentPath?.replace("/", "");
+  const validKeys = menuData?.map((item) => item?.mnLink);
+  const selectedKey = validKeys?.includes(selectedKeyFromPath)
+    ? selectedKeyFromPath
+    : lastSelectedKey;
 
   const defaultOpenKeys = items
   .filter(item => item?.mnName === "Billing" || item?.children)
@@ -133,7 +145,8 @@ export default function SideBarOpen() {
               width: 256,
             }}
             className="overflow-y-scroll side-bar-scroll"
-            defaultSelectedKeys={defaultSelectedKeys}
+            selectedKeys={selectedKey ? [selectedKey] : []}
+            // defaultSelectedKeys={defaultSelectedKeys}
             defaultOpenKeys={defaultOpenKeys}
             mode="inline"
             items={items}

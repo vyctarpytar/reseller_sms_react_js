@@ -15,15 +15,7 @@ import toast from "react-hot-toast";
 import remove from "../../../assets/svg/delete.svg";
 import svg37 from "../../../assets/svg/svg37.svg";
 import svg25 from "../../../assets/svg/svg25.svg";
-import {
-  fetchDistinctSenderNames,
-  fetchDistinctStatus,
-} from "../../../features/filter/filterSlice";
-import { fetchSavedSms, save } from "../../../features/save/saveSlice";
-import moment from "moment";
-import { fetchResellerAccounts } from "../../../features/reseller-account/resellerAccountSlice";
-import { normalizeDateToLocalYearWTime } from "../../../utils";
-import { fetchReseller } from "../../../features/reseller/resellerSlice";
+import { QuarterData } from "../../../data";
 
 const { TextArea } = Input;
 const FilterModal = ({
@@ -120,10 +112,8 @@ const FilterModal = ({
     });
   };
 
-  // const [formData, setFormData] = useState();
-
-  function handleSelectChange(value, formName) {
-    setFormData((prevData) => ({
+  async function handleSelectChange(value, formName) {
+    await setFormData((prevData) => ({
       ...prevData,
       [formName]: value,
     }));
@@ -148,38 +138,14 @@ const FilterModal = ({
     }));
   };
 
-  function fetchResellerAccountData() {
-    dispatch(fetchResellerAccounts());
-  }
-  function fetchResellerData() {
-    dispatch(fetchReseller());
-  }
-
   const onFinish = async (data) => {
-    const res = await dispatch(
-      fetchSavedSms({
-        msgStatus: formData?.msgStatus,
-        msgCreatedFrom: normalizeDateToLocalYearWTime(formData?.msgCreatedFrom),
-        msgCreatedTo: normalizeDateToLocalYearWTime(formData?.msgCreatedTo),
-        msgSubmobileNo: formData?.msgSubmobileNo,
-        msgMessage: formData?.msgMessage,
-        msgAccId: formData?.msgAccId,
-        msgSenderId: formData?.msgSenderId,
-        url: "api/v2/sms",
-      })
-    );
-    if (res?.payload?.success) {
-      toast.success(res.payload?.messages?.message);
-      setIsModalOpen(false);
-    } else {
-      toast.error(res.payload?.messages?.message);
-    }
+    await setIsModalOpen(false);
   };
 
   const handleClear = async () => {
     await setFilters([]);
     await setFormData({});
-    await handleCancel();
+    await handleCancel(); 
   };
 
   return (
@@ -233,7 +199,7 @@ const FilterModal = ({
                         value={formData?.quarter}
                         className=""
                         allowClear
-                        placeholder="Select Account"
+                        placeholder="Select Quarter"
                         style={{
                           width: "100%",
                         }}
@@ -241,10 +207,10 @@ const FilterModal = ({
                           handleSelectChange(value, "quarter");
                         }}
                         options={
-                          resellerAccountData?.length > 0 &&
-                          resellerAccountData?.map((item) => ({
-                            value: item?.accId,
-                            label: item?.accName,
+                          QuarterData?.length > 0 &&
+                          QuarterData?.map((item) => ({
+                            value: item?.value,
+                            label: item?.label,
                           }))
                         }
                         showSearch
@@ -302,9 +268,7 @@ const FilterModal = ({
                             input?.toLocaleLowerCase()
                           )
                         }
-                        onDropdownVisibleChange={() => {
-                          fetchResellerData();
-                        }}
+                        onDropdownVisibleChange={() => {}}
                       />
                     </Form.Item>
                     <Form.Item className="w-[20%]">
@@ -352,9 +316,7 @@ const FilterModal = ({
                             input?.toLocaleLowerCase()
                           )
                         }
-                        onDropdownVisibleChange={() => {
-                          fetchResellerData();
-                        }}
+                        onDropdownVisibleChange={() => {}}
                       />
                     </Form.Item>
                     <Form.Item className="w-[20%]">
@@ -390,7 +352,7 @@ const FilterModal = ({
               {filters && filters?.length > 0 && (
                 <div className="w-[150px]">
                   <button type="submit" className="cstm-btn">
-                    {loadingSms ? <Spin /> : "Submit"}
+                    {loadingSms ? <Spin /> : "Done"}
                   </button>
                 </div>
               )}

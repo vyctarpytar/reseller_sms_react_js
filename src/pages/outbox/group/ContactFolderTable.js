@@ -13,6 +13,8 @@ import AddFolderModal from "./modal/AddFolderModal";
 import svg27 from "../../../assets/svg/svg27.svg";
 import SmsGroupModal from "./SmsGroupModal";
 import SmsManyGroupModal from "./SmsManyGroupModal";
+import ConfirmModal from "../../../components/ConfirmModal";
+import { deleteRequest } from "../../../features/save/saveSlice";
 
 export default function ContactFolderTable({
   handleFetchData,
@@ -24,6 +26,7 @@ export default function ContactFolderTable({
   const { fldLoading, gradFolders, deleteLoading } = useSelector(
     (state) => state.folder
   );
+  const {saving } =  useSelector((state)=>state.save)
 
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [hasSelected, sethasSelected] = useState(false);
@@ -31,6 +34,15 @@ export default function ContactFolderTable({
   const [search, setsearch] = useState("");
 
   const [open, setopen] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false); 
+  const handleOpenDelete = async (item) => { 
+    await setOpenDelete(true);
+  };
+  const handleCloseDelete = () => {
+    setOpenDelete(false);
+  };
+
+  
 
   function handleCancel() {
     setopen(false);
@@ -201,22 +213,21 @@ export default function ContactFolderTable({
         </div>
       ),
     },
+ {
+      key: "2",
+      label: (
+        <div
+          onClick={handleOpenDelete}
+          className="font-dmSans text-[#344054] font-[500] text-[18px] !mt-[5%]"
+        >
+       Delete groups
+        </div>
+      ),
+    },
 
-    // {
-    //   key: "2",
-    //   label: (
-    //     <div
-    //       onClick={handleSelectTemplate}
-    //       className="font-dmSans text-[#344054] font-[500] text-[18px] !mt-[5%]"
-    //     >
-    //       Select template
-    //     </div>
-    //   ),
-    // },
   ];
 
-  const [rowId, setRowId] = useState([]);
-
+  const [rowId, setRowId] = useState([]); 
   const handleEmployeeToReturns = async (selectedRows) => {
     await setRowId(selectedRows);
     // await showModalGroup();
@@ -231,6 +242,23 @@ export default function ContactFolderTable({
     selectedRowKeys,
     onChange: onSelectChange,
   };
+
+  const handleDeleteMultiplegroups=async()=>{
+     const groupIds = rowId?.map((g) => g?.groupId); 
+  const res = await dispatch(
+      deleteRequest({
+        url: `api/v2/groups/multiple`,
+        groupId:groupIds
+      })
+    );
+    if (res?.payload?.success) {
+      toast.success(res?.payload?.messages?.message);
+      await handleFetch();
+      await handleCloseDelete(); 
+    } else {
+      toast.error(res?.payload?.messages?.message);
+    }
+  }
 
   async function handleFetch() {
     await handleFetchData();
@@ -342,6 +370,15 @@ export default function ContactFolderTable({
         loading={deleteLoading}
         content={`Are you sure you want to delete ${prodd1?.groupName}?`}
         title={`Remove ${prodd1?.groupName}`}
+      />
+        <ConfirmModal
+        open={openDelete}
+        handleCancel={handleCloseDelete}
+        handleSubmit={handleDeleteMultiplegroups}
+        loading={saving}
+        content={`Are you sure you want to delete ${rowId?.length} groups?`}
+        type="alert"
+        btnTitle="Delete"
       />
 
       <AddFolderModal

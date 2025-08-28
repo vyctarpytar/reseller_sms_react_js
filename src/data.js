@@ -105,3 +105,23 @@ export const accessLevelData = [
     value: "ADMIN",
   }, 
 ];
+export const QuarterData = [
+    {
+    label: "Q1 (Jul - Sep)",
+    value: 1,
+  },
+   {
+    label: "Q2 (Oct - Dec)",
+    value: 2,
+  },
+  {
+    label: "Q3 (Jan - Mar)",
+    value: 3,
+  },
+  {
+    label: "Q4 (Apr - Jun)",
+    value: 4,
+  },
+
+ 
+];

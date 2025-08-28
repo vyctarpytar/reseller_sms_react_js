@@ -22,30 +22,42 @@ import { fetchData } from "../../../features/global/globalSlice";
 import svg38 from "../../../assets/svg/svg38.svg";
 import FilterModal from "./FilterModal";
 import Cards from "./Cards";
+import moment from "moment";
+import { fetchReseller } from "../../../features/reseller/resellerSlice";
+import { fetchResellerAccounts } from "../../../features/reseller-account/resellerAccountSlice";
 
 function QuarterlyReport() {
-  const [selectId, setSelectId] = useState(null);
+  const [selectId, setSelectId] = useState(new Date().getFullYear());
+  const [formData, setFormData] = useState({});
   const dispatch = useDispatch();
   const [form] = Form.useForm();
   const formRef = useRef(null);
   const urlYear = "api/v2/annual-reports/years";
-  const urlCard = `api/v2/annual-reports/summary?year=2025&quarter=1`;
-  const urlGrid = `api/v2/annual-reports?year=2025&quarter=1`;
+  const urlCard = `api/v2/annual-reports/summary?year=${selectId}&quarter=${
+    formData?.quarter ?? null
+  }&accountId=${formData?.accountId ?? null}&resellerId=${
+    formData?.resellerId ?? null
+  }`;
+  const urlGrid = `api/v2/annual-reports?year=${selectId}&quarter=${
+    formData?.quarter ?? null
+  }&accountId=${formData?.accountId ?? null}&resellerId=${
+    formData?.resellerId ?? null
+  }`;
 
   const { dataYear, dataCard, dataGrid, countGrid, loading } = useSelector(
     (state) => ({
-      dataYear: state.global.data[urlYear] || [],
-      dataCard: state.global.data[urlCard] || {},
-      dataGrid: state.global.data[urlGrid] || [],
-      countGrid: state.global.count[urlGrid] || 0,
-      loading: state.global.loading,
+      dataYear: state?.global?.data?.[urlYear] || [],
+      dataCard: state?.global?.data?.[urlCard] || [],
+      dataGrid: state?.global?.data?.[urlGrid] || [],
+      countGrid: state?.global?.count?.[urlGrid] || 0,
+      loading: state?.global?.loading,
     })
   );
+  
 
   const { user } = useSelector((state) => state.auth);
   const { saving } = useSelector((state) => state.save);
 
-  const [formData, setFormData] = useState({});
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -121,56 +133,64 @@ function QuarterlyReport() {
     { title: "Delivery Rate", dataIndex: "deliveryRate" },
     { title: "Revenue", dataIndex: "revenue" },
     { title: "Avg Msg Cost", dataIndex: "averageMessageCost" },
+    { title: "Unit Price", dataIndex: "unitPrice" }, 
     { title: "Unique Customers", dataIndex: "uniqueCustomerCount" },
     { title: "Top Month", dataIndex: "topPerformingMonth" },
     { title: "Status", dataIndex: "status" },
-    { title: "Updated", dataIndex: "updatedAt" },
+    {
+      title: "Updated",
+      dataIndex: "updatedAt",
+      render: (text) =>
+        text ? moment(text)?.format("DD-MM-YYYY HH:mm:ss") : "-",
+    },
   ];
+  const [expandedRowKeys, setExpandedRowKeys] = useState([]);
 
   const tableData = dataGrid?.map((item) => ({
-    key: item.id,
-    resellerName: item.resellerName,
-    accountName: item.accountName,
-    senderId: item.senderId,
-    senderIdProvider: item.senderIdProvider,
+    key: item?.id,
+    resellerName: item?.resellerName,
+    accountName: item?.accountName,
+    senderId: item?.senderId,
+    senderIdProvider: item?.senderIdProvider,
     period: `Q${item.quarter} ${item.year}`,
-    messages: item.quarterTotalMessages,
-    delivered: item.quarterDeliveredCount,
-    failed: item.quarterFailedCount,
+    messages: item?.quarterTotalMessages,
+    delivered: item?.quarterDeliveredCount,
+    failed: item?.quarterFailedCount,
     deliveryRate: `${item.quarterDeliveryRate}%`,
-    revenue: item.quarterTotalRevenue,
-    averageMessageCost: item.averageMessageCost,
-    uniqueCustomerCount: item.uniqueCustomerCount,
-    topPerformingMonth: item.topPerformingMonth,
-    status: item.status,
-    updatedAt: item.updatedAt,
+    revenue: item?.quarterTotalRevenue,
+    averageMessageCost: item?.averageMessageCost,
+    unitPrice: item?.unitPrice,
+    uniqueCustomerCount: item?.uniqueCustomerCount,
+    topPerformingMonth: item?.topPerformingMonth,
+    status: item?.status,
+    updatedAt: item?.updatedAt,
     children: [
       {
         key: `${item.id}-1`,
-        period: item.month1?.monthName,
-        messages: item.month1?.messageCount,
-        delivered: item.month1?.deliveredCount,
-        failed: item.month1?.failedCount,
+        period: item?.month1?.monthName,
+        messages: item?.month1?.messageCount,
+        delivered: item?.month1?.deliveredCount,
+        failed: item?.month1?.failedCount,
         deliveryRate: `${item.month1?.deliveryRate}%`,
-        revenue: item.month1?.revenue,
+        revenue: item?.month1?.revenue,
       },
       {
         key: `${item.id}-2`,
-        period: item.month2?.monthName,
-        messages: item.month2?.messageCount,
-        delivered: item.month2?.deliveredCount,
-        failed: item.month2?.failedCount,
+        period: item?.month2?.monthName,
+        messages: item?.month2?.messageCount,
+        delivered: item?.month2?.deliveredCount,
+        failed: item?.month2?.failedCount,
         deliveryRate: `${item.month2?.deliveryRate}%`,
-        revenue: item.month2?.revenue,
+        revenue: item?.month2?.revenue,
       },
       {
         key: `${item.id}-3`,
-        period: item.month3?.monthName,
-        messages: item.month3?.messageCount,
-        delivered: item.month3?.deliveredCount,
-        failed: item.month3?.failedCount,
+        period: item?.month3?.monthName,
+        messages: item?.month3?.messageCount,
+        delivered: item?.month3?.deliveredCount,
+        failed: item?.month3?.failedCount,
         deliveryRate: `${item.month3?.deliveryRate}%`,
-        revenue: item.month3?.revenue,
+        revenue: item?.month3?.revenue,
       },
     ],
   }));
@@ -181,10 +201,14 @@ function QuarterlyReport() {
   const handleClick = async (item) => {
     const res = await dispatch(
       downloadExcel({
-        url: "api/v2/annual-reports/export/excel",
-        year: selectId,
+        url: `api/v2/annual-reports/export/excel?year=${selectId}&quarter=${
+          formData?.quarter ?? null
+        }&accountId=${formData?.accountId ?? null}&resellerId=${
+          formData?.resellerId ?? null
+        }`,
       })
     );
+
     if (res?.payload) {
       const blob = new Blob([res.payload], {
         type: "application/octet-stream",
@@ -210,41 +234,19 @@ function QuarterlyReport() {
       })
     );
   }
- 
+
   const handleClearFilters = async () => {
     await setFormData({});
-    // const res = await dispatch(
-    //   fetchSavedSms({
-    //     url: "api/v2/sms",
-    //     msgStatus: null,
-    //     msgCreatedDate: null,
-    //     msgSubmobileNo: null,
-    //     msgMessage: null,
-    //     msgAccId: null,
-    //     msgSenderId: null,
-    //     msgCreatedFrom: null,
-    //     msgCreatedTo: null,
-    //   })
-    // );
   };
-  useEffect(() => {
-    // if (dataYear?.length > 0) {
-    //   const today = new Date();
-    //   const currentFY = dataYear?.find((fy) => {
-    //     const start = new Date(fy?.startDate);
-    //     const end = new Date(fy?.endDate);
-    //     return today >= start && today <= end;
-    //   });
-    //   if (currentFY) {
-    //     setSelectId(currentFY.fiscalYear);
-    //     setFyYear(currentFY);
-    //   }
-    // }
-  }, [dataYear]);
 
   useEffect(() => {
     fetchTableData();
-  }, [selectId]);
+    dispatch(
+      fetchData({
+        url: urlCard,
+      })
+    );
+  }, [selectId, formData]);
 
   useEffect(() => {
     dispatch(
@@ -252,15 +254,11 @@ function QuarterlyReport() {
         url: urlYear,
       })
     );
-    dispatch(
-      fetchData({
-        url: urlCard,
-      })
-    );
+    dispatch(fetchResellerAccounts());
+    dispatch(fetchReseller());
   }, []);
-  console.log("dataGrid", dataGrid);
-  console.log("dataCard", dataCard);
-  if (loading) return <TableLoading />;
+
+  if (loading && !isModalOpen) return <TableLoading />;
   return (
     <div className="w-full h-full overflow-y-scroll lg:px-10 px-3">
       <div className="flex lg:flex-row flex-col-reverse lg:items-center  gap-2 mt-10  justify-between">
@@ -323,9 +321,9 @@ function QuarterlyReport() {
           </Form>
         </div>
       </div>
- 
+
       <Cards dataCard={dataCard} />
-      <div className="flex justify-end item-center w-full">
+      <div className="flex justify-end item-center w-full mt-[1rem]">
         <Tooltip placement="top" title={"Download Excel"}>
           {saving ? (
             <Spin className="sms-spin" />
@@ -343,15 +341,20 @@ function QuarterlyReport() {
       </div>
       <Table
         className="mt-[1.31rem] w-full"
-        scroll={{
-          x: "auto",
-        }}
-        rowKey={(record) => record?.id}
+        scroll={{ x: "2000px" }}
+        rowKey={(record) => record?.key}
         columns={columns}
-          dataSource={tableData}
-            expandable={{
-        defaultExpandAllRows: true, 
-      }}
+        dataSource={tableData}
+        expandable={{
+          expandedRowKeys,
+          onExpand: (expanded, record) => {
+            if (expanded) {
+              setExpandedRowKeys([record.key]);
+            } else {
+              setExpandedRowKeys([]);
+            }
+          },
+        }}
         loading={loading}
         pagination={{
           position: ["bottomCenter"],
@@ -367,7 +370,6 @@ function QuarterlyReport() {
           hideOnSinglePage: true,
         }}
       />
-
       <FilterModal
         isModalOpen={isModalOpen}
         setIsModalOpen={setIsModalOpen}

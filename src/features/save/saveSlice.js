@@ -56,6 +56,26 @@ export const saveForget = createAsyncThunk('saveSlice/save', async (data, { reje
 	}
   });
 
+  export const saveArray = createAsyncThunk(
+  "saveSlice/saveArray/ordinary",
+  async (data, { rejectWithValue }) => {
+    let saveUrl = data.url;
+    delete data.url;
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    const payloadToSend = Array.isArray(data.data) ? data.data : data;
+
+    try {
+      const response = await axiosInstance.post(`/${saveUrl}`, payloadToSend);
+      if (!response.data.success) {
+        return rejectWithValue(response.data);
+      }
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response.data);
+    }
+  }
+);
+
   export const deleteRequest = createAsyncThunk(
   "deleteSlice/delete/ordinary",
   async (data, { rejectWithValue }) => {
@@ -214,6 +234,9 @@ export const saveSlice = createSlice({
 			.addCase(save.rejected, (state) => {
 				state.saving = false;
 			})
+
+
+			
  
 			.addCase(deleteRequest.pending, (state) => {
 				state.saving = true;
