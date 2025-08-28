@@ -51,6 +51,7 @@ import SandBox from './pages/sand-box/SandBox';
 import WithdrawalList from './pages/withdrawal/WithdrawalList';
 import WithdrawalPage from './pages/withdrawal/WithdrawalPage';
 import ScheduledSmsList from './pages/scheduled-sms/ScheduledSmsList';
+import QuarterlyReport from './pages/reports/quarterly-report/QuarterlyReport';
  
 export const router = createHashRouter([
 	{
@@ -254,6 +255,11 @@ export const router = createHashRouter([
 						path:'/date-analysis',
 						element: <DailySms />,
 					},
+					{
+						path:'/quartely-Report',
+						element: <QuarterlyReport />,
+					},
+					
 					{
 						path:'/dev-sandbox',
 						element: <SandBox />,
