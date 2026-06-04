@@ -101,6 +101,7 @@ export default function SideBarOpen() {
     await navigate(e.key);
   };
 
+
   const selectedKeyFromPath = currentPath?.replace("/", "");
   const validKeys = menuData?.map((item) => item?.mnLink);
   const selectedKey = validKeys?.includes(selectedKeyFromPath)
